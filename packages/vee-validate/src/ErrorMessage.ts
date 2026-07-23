@@ -21,7 +21,7 @@ const ErrorMessageImpl = /** #__PURE__ */ defineComponent({
   setup(props, ctx) {
     const form = inject(FormContextKey, undefined);
     const message = computed<string | undefined>(() => {
-      return form?.errors.value[props.name];
+        throw new Error("STUB");
     });
 
     function slotProps(): ErrorMessageSlotProps {
@@ -31,32 +31,7 @@ const ErrorMessageImpl = /** #__PURE__ */ defineComponent({
     }
 
     return () => {
-      // Renders nothing if there are no messages
-      if (!message.value) {
-        return undefined;
-      }
-
-      const tag = (props.as ? resolveDynamicComponent(props.as) : props.as) as string;
-      const children = normalizeChildren(tag, ctx, slotProps as any);
-
-      const attrs = {
-        role: 'alert',
-        ...ctx.attrs,
-      };
-
-      // If no tag was specified and there are children
-      // render the slot as is without wrapping it
-      if (!tag && (Array.isArray(children) || !children) && children?.length) {
-        return children;
-      }
-
-      // If no children in slot
-      // render whatever specified and fallback to a <span> with the message in it's contents
-      if ((Array.isArray(children) || !children) && !children?.length) {
-        return h(tag || 'span', attrs, message.value);
-      }
-
-      return h(tag, attrs, children);
+        throw new Error("STUB");
     };
   },
 });

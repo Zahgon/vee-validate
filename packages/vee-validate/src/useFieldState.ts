@@ -76,7 +76,7 @@ export function useFieldState<TValue = unknown>(
     validate: init.validate,
   });
 
-  const errors = computed(() => state.errors);
+  const errors = computed(() => { throw new Error("STUB"); });
 
   function setState(state: Partial<StateSetterInit<TValue>>) {
     if ('value' in state) {
@@ -213,16 +213,16 @@ function createFieldMeta<TValue>(
     pending: false,
     valid: true,
     validated: !!unref(errors).length,
-    initialValue: computed(() => unref(initialValue) as TValue | undefined),
+    initialValue: computed(() => { throw new Error("STUB"); }),
     dirty: computed(() => {
-      return !isEqual(unref(currentValue), unref(initialValue));
+        throw new Error("STUB");
     }),
   }) as FieldMeta<TValue>;
 
   watch(
     errors,
     value => {
-      meta.valid = !value.length;
+        throw new Error("STUB");
     },
     {
       immediate: true,
@@ -242,7 +242,7 @@ export function createFieldErrors() {
   return {
     errors,
     setErrors: (messages: string | string[] | null | undefined) => {
-      errors.value = normalizeErrorItem(messages);
+        throw new Error("STUB");
     },
   };
 }

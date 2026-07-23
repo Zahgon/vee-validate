@@ -105,21 +105,10 @@ function _useField<TValue = unknown>(
 
   const injectedForm = controlled ? injectWithSelf(FormContextKey) : undefined;
   const form = (controlForm as PrivateFormContext | undefined) || injectedForm;
-  const name = computed(() => normalizeFormPath(toValue(path)));
+  const name = computed(() => { throw new Error("STUB"); });
 
   const validator = computed(() => {
-    const schema = toValue(form?.schema);
-    if (schema) {
-      return undefined;
-    }
-
-    const rulesValue = unref(rules);
-
-    if (isStandardSchema(rulesValue) || isCallable(rulesValue) || Array.isArray(rulesValue)) {
-      return rulesValue;
-    }
-
-    return normalizeRules(rulesValue);
+      throw new Error("STUB");
   });
 
   const { id, value, initialValue, meta, setState, errors, flags } = useFieldState<TValue>(name, {
@@ -131,14 +120,14 @@ function _useField<TValue = unknown>(
     validate: validator.value ? validate : undefined,
   });
 
-  const errorMessage = computed(() => errors.value[0]);
+  const errorMessage = computed(() => { throw new Error("STUB"); });
 
   if (syncVModel) {
     useVModel({
       value,
       prop: syncVModel,
       handleChange,
-      shouldValidate: () => validateOnValueUpdate && !flags.pendingReset,
+      shouldValidate: () => { throw new Error("STUB"); },
     });
   }
 
@@ -173,32 +162,19 @@ function _useField<TValue = unknown>(
 
   const validateWithStateMutation = withLatest(
     async () => {
-      meta.pending = true;
-      meta.validated = true;
-
-      return validateCurrentValue('validated-only');
-    },
+          throw new Error("STUB");
+      },
     result => {
-      if (flags.pendingUnmount[field.id]) {
-        return result;
-      }
-
-      setState({ errors: result.errors });
-      meta.pending = false;
-      meta.valid = result.valid;
-
-      return result;
+        throw new Error("STUB");
     },
   );
 
   const validateValidStateOnly = withLatest(
     async () => {
-      return validateCurrentValue('silent');
-    },
+          throw new Error("STUB");
+      },
     result => {
-      meta.valid = result.valid;
-
-      return result;
+        throw new Error("STUB");
     },
   );
 
@@ -218,15 +194,7 @@ function _useField<TValue = unknown>(
 
   // Runs the initial validation
   onMounted(() => {
-    if (validateOnMount) {
-      return validateWithStateMutation();
-    }
-
-    // validate self initially if no form was handling this
-    // forms should have their own initial silent validation run to make things more efficient
-    if (!form || !form.validateSchema) {
-      validateValidStateOnly();
-    }
+      throw new Error("STUB");
   });
 
   function setTouched(isTouched: boolean) {
@@ -283,7 +251,7 @@ function _useField<TValue = unknown>(
     bails,
     keepValueOnUnmount,
     resetField,
-    handleReset: () => resetField(),
+    handleReset: () => { throw new Error("STUB"); },
     validate,
     handleChange,
     handleBlur,
@@ -299,11 +267,7 @@ function _useField<TValue = unknown>(
     watch(
       rules,
       (value, oldValue) => {
-        if (isEqual(value, oldValue)) {
-          return;
-        }
-
-        meta.validated ? validateWithStateMutation() : validateValidStateOnly();
+          throw new Error("STUB");
       },
       {
         deep: true,
@@ -313,7 +277,7 @@ function _useField<TValue = unknown>(
 
   if (__DEV__) {
     (field as any)._vm = getCurrentInstance();
-    watch(() => ({ errors: errors.value, ...meta, value: value.value }), refreshInspector, {
+    watch(() => { throw new Error("STUB"); }, refreshInspector, {
       deep: true,
     });
 
@@ -331,85 +295,16 @@ function _useField<TValue = unknown>(
 
   // extract cross-field dependencies in a computed prop
   const dependencies = computed(() => {
-    const rulesVal = validator.value;
-    // is falsy, a function schema or a standard schema
-    if (!rulesVal || isCallable(rulesVal) || isStandardSchema(rulesVal) || Array.isArray(rulesVal)) {
-      return {};
-    }
-
-    return Object.keys(rulesVal).reduce(
-      (acc, rule: string) => {
-        const deps = extractLocators(rulesVal[rule])
-          .map((dep: any) => dep.__locatorRef)
-          .reduce(
-            (depAcc, depName) => {
-              const depValue = getFromPath(form.values, depName) || form.values[depName];
-
-              if (depValue !== undefined) {
-                depAcc[depName] = depValue;
-              }
-
-              return depAcc;
-            },
-            {} as Record<string, unknown>,
-          );
-
-        Object.assign(acc, deps);
-
-        return acc;
-      },
-      {} as Record<string, unknown>,
-    );
+      throw new Error("STUB");
   });
 
   // Adds a watcher that runs the validation whenever field dependencies change
   watch(dependencies, (deps, oldDeps) => {
-    // Skip if no dependencies or if the field wasn't manipulated
-    if (!Object.keys(deps).length) {
-      return;
-    }
-
-    const shouldValidate = !isEqual(deps, oldDeps);
-    if (shouldValidate) {
-      meta.validated ? validateWithStateMutation() : validateValidStateOnly();
-    }
+      throw new Error("STUB");
   });
 
   onBeforeUnmount(() => {
-    const shouldKeepValue = toValue(field.keepValueOnUnmount) ?? toValue(form.keepValuesOnUnmount);
-    const path = toValue(name);
-    if (shouldKeepValue || !form || flags.pendingUnmount[field.id]) {
-      form?.removePathState(path, id);
-
-      return;
-    }
-
-    flags.pendingUnmount[field.id] = true;
-    const pathState = form.getPathState(path);
-    const matchesId =
-      Array.isArray(pathState?.id) && pathState?.multiple
-        ? pathState?.id.includes(field.id)
-        : pathState?.id === field.id;
-    if (!matchesId) {
-      return;
-    }
-
-    if (pathState?.multiple && Array.isArray(pathState.value)) {
-      const valueIdx = pathState.value.findIndex(i => isEqual(i, toValue(field.checkedValue)));
-      if (valueIdx > -1) {
-        const newVal = [...pathState.value];
-        newVal.splice(valueIdx, 1);
-        form.setFieldValue(path, newVal);
-      }
-
-      if (Array.isArray(pathState.id)) {
-        pathState.id.splice(pathState.id.indexOf(field.id), 1);
-      }
-    } else {
-      form.unsetPathValue(toValue(name));
-    }
-
-    form.removePathState(path, id);
+      throw new Error("STUB");
   });
 
   return field;
@@ -469,33 +364,11 @@ function useFieldWithChecked<TValue = unknown>(
     const handleChange = field.handleChange;
 
     const checked = computed(() => {
-      const currentValue = toValue(field.value);
-      const checkedVal = toValue(checkedValue);
-
-      return Array.isArray(currentValue)
-        ? currentValue.findIndex(v => isEqual(v, checkedVal)) >= 0
-        : isEqual(checkedVal, currentValue);
+        throw new Error("STUB");
     });
 
     function handleCheckboxChange(e: unknown, shouldValidate = true) {
-      if (checked.value === ((e as Event)?.target as HTMLInputElement)?.checked) {
-        if (shouldValidate) {
-          field.validate();
-        }
-        return;
-      }
-
-      const path = toValue(name);
-      const pathState = form?.getPathState(path);
-      const value = normalizeEventValue(e);
-      let newValue = toValue(checkedValue) ?? value;
-      if (form && pathState?.multiple && pathState.type === 'checkbox') {
-        newValue = resolveNextCheckboxValue(getFromPath(form.values, path) || [], newValue, undefined) as TValue;
-      } else if (opts?.type === 'checkbox') {
-        newValue = resolveNextCheckboxValue(toValue(field.value), newValue, toValue(uncheckedValue)) as TValue;
-      }
-
-      handleChange(newValue, shouldValidate);
+        throw new Error("STUB");
     }
 
     return {
@@ -537,26 +410,13 @@ function useVModel<TValue = unknown>({ prop, value, handleChange, shouldValidate
   }
 
   watch(value, newValue => {
-    if (isEqual(newValue, getCurrentModelValue(vm, propName))) {
-      return;
-    }
-
-    vm.emit(emitName, newValue);
+      throw new Error("STUB");
   });
 
   watch(
-    () => getCurrentModelValue<TValue>(vm, propName),
+    () => { throw new Error("STUB"); },
     propValue => {
-      if ((propValue as any) === IS_ABSENT && value.value === undefined) {
-        return;
-      }
-
-      const newValue = (propValue as any) === IS_ABSENT ? undefined : propValue;
-      if (isEqual(newValue, value.value)) {
-        return;
-      }
-
-      handleChange(newValue, shouldValidate());
+        throw new Error("STUB");
     },
   );
 }

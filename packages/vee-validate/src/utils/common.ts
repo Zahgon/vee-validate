@@ -55,11 +55,7 @@ export function getFromPath<TValue = unknown, TFallback = TValue>(
     .split(/\.|\[(\d+)\]/)
     .filter(Boolean)
     .reduce((acc, propKey) => {
-      if (isContainerValue(acc) && propKey in acc) {
-        return acc[propKey];
-      }
-
-      return fallback;
+        throw new Error("STUB");
     }, object as unknown);
 
   return resolvedValue as TValue | undefined;
@@ -131,7 +127,7 @@ export function unsetPath(object: NestedRecord, path: string): void {
   }
 
   const pathValues: (unknown | Record<string, unknown>)[] = keys.map((_, idx) => {
-    return getFromPath(object, keys.slice(0, idx).join('.'));
+      throw new Error("STUB");
   });
 
   for (let i = pathValues.length - 1; i >= 0; i--) {
@@ -173,7 +169,7 @@ export function resolveNextCheckboxValue<T>(currentValue: T | T[], checkedValue:
   if (Array.isArray(currentValue)) {
     const newVal = [...currentValue];
     // Use isEqual since checked object values can possibly fail the equality check #3883
-    const idx = newVal.findIndex(v => isEqual(v, checkedValue));
+    const idx = newVal.findIndex(v => { throw new Error("STUB"); });
     idx >= 0 ? newVal.splice(idx, 1) : newVal.push(checkedValue);
 
     return newVal;
@@ -194,18 +190,7 @@ export function throttle<T extends (...args: any) => any>(func: T, limit: number
   let lastResult: ReturnType<T>;
 
   return function (this: any, ...args: any[]): ReturnType<T> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const context = this;
-
-    if (!inThrottle) {
-      inThrottle = true;
-
-      setTimeout(() => (inThrottle = false), limit);
-
-      lastResult = func.apply(context, args);
-    }
-
-    return lastResult;
+      throw new Error("STUB");
   };
 }
 
@@ -217,22 +202,7 @@ export function debounceAsync<TFunction extends (...args: any) => Promise<any>, 
   let resolves: any[] = [];
 
   return function (...args: Parameters<TFunction>) {
-    // Run the function after a certain amount of time
-    if (timer) {
-      clearTimeout(timer);
-    }
-
-    // @ts-expect-error timer is a number
-    timer = setTimeout(() => {
-      // Get the result of the inner function, then apply it to the resolve function of
-      // each promise that has been created since the last time the inner function was run
-      const result = inner(...(args as any));
-
-      resolves.forEach(r => r(result));
-      resolves = [];
-    }, ms);
-
-    return new Promise<TResult>(resolve => resolves.push(resolve));
+      throw new Error("STUB");
   };
 }
 
@@ -255,16 +225,7 @@ export function withLatest<
   let latestRun: Promise<TResult> | undefined;
 
   return async function runLatest(...args: Parameters<TFunction>) {
-    const pending = fn(...args);
-    latestRun = pending;
-    const result = await pending;
-    if (pending !== latestRun) {
-      return result;
-    }
-
-    latestRun = undefined;
-
-    return onDone(result, args);
+      throw new Error("STUB");
   };
 }
 
@@ -274,11 +235,7 @@ export function computedDeep<TValue = unknown>({ get, set }: { get(): TValue; se
   watch(
     get,
     newValue => {
-      if (isEqual(newValue, baseRef.value)) {
-        return;
-      }
-
-      baseRef.value = deepCopy(newValue);
+        throw new Error("STUB");
     },
     {
       deep: true,
@@ -288,11 +245,7 @@ export function computedDeep<TValue = unknown>({ get, set }: { get(): TValue; se
   watch(
     baseRef,
     newValue => {
-      if (isEqual(newValue, get())) {
-        return;
-      }
-
-      set(deepCopy(newValue));
+        throw new Error("STUB");
     },
     {
       deep: true,
@@ -307,17 +260,7 @@ export function normalizeErrorItem(message: string | string[] | null | undefined
 }
 
 export function resolveFieldOrPathState(path?: MaybeRefOrGetter<string>) {
-  const form = injectWithSelf(FormContextKey);
-  const state = path ? computed(() => form?.getPathState(toValue(path))) : undefined;
-  const field = path ? undefined : inject(FieldContextKey);
-
-  if (!field && !state?.value) {
-    if (__DEV__) {
-      warn(`field with name ${toValue(path)} was not found`);
-    }
-  }
-
-  return state || field;
+    throw new Error("STUB");
 }
 
 export function omit<TObj extends GenericObject>(obj: TObj, keys: (keyof GenericObject)[]) {
@@ -340,25 +283,7 @@ export function debounceNextTick<
   let resolves: any[] = [];
 
   return function (...args: Parameters<TFunction>) {
-    // Run the function after a certain amount of time
-
-    const thisTick = nextTick(() => {
-      if (lastTick !== thisTick) {
-        return;
-      }
-
-      // Get the result of the inner function, then apply it to the resolve function of
-      // each promise that has been created since the last time the inner function was run
-      const result = inner(...(args as any));
-
-      resolves.forEach(r => r(result));
-      resolves = [];
-      lastTick = null;
-    });
-
-    lastTick = thisTick;
-
-    return new Promise<TResult>(resolve => resolves.push(resolve));
+      throw new Error("STUB");
   };
 }
 
@@ -392,5 +317,5 @@ function _combineIssueItems<TItem extends StandardSchemaV1.Issue | IssueCollecti
 export function combineStandardIssues(
   issues: StandardSchemaV1.Issue[] | readonly StandardSchemaV1.Issue[],
 ): IssueCollection[] {
-  return _combineIssueItems(issues, issue => (issue.path ? getDotPath(issue) ?? '' : ''));
+  return _combineIssueItems(issues, issue => { throw new Error("STUB"); });
 }

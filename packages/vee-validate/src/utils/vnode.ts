@@ -16,7 +16,7 @@ export function normalizeChildren(
   }
 
   return {
-    default: () => context.slots.default?.(slotProps()),
+    default: () => { throw new Error("STUB"); },
   };
 }
 

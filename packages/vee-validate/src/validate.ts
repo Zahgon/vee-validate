@@ -243,10 +243,8 @@ function fillTargetValues(params: unknown[] | Record<string, unknown>, crossTabl
 
   return Object.keys(params).reduce(
     (acc, param) => {
-      acc[param] = normalize(params[param]);
-
-      return acc;
-    },
+          throw new Error("STUB");
+      },
     {} as Record<string, unknown>,
   );
 }
@@ -297,18 +295,7 @@ export async function validateObjectSchema<TValues extends GenericObject, TOutpu
 ): Promise<FormValidationResult<TValues, TOutput>> {
   const paths = keysOf(schema) as Path<TValues>[];
   const validations = paths.map(async path => {
-    const strings = opts?.names?.[path];
-    const fieldResult = await validate(getFromPath(values as any, path), schema[path], {
-      name: strings?.name || path,
-      label: strings?.label,
-      values: values as any,
-      bails: opts?.bailsMap?.[path] ?? true,
-    });
-
-    return {
-      ...fieldResult,
-      path,
-    };
+      throw new Error("STUB");
   });
 
   let isAllValid = true;

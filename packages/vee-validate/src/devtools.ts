@@ -49,130 +49,14 @@ async function installDevtoolsPlugin(app: App) {
         logo: 'https://vee-validate.logaretm.com/v5/logo.png',
       },
       api => {
-        API = api;
-
-        api.addInspector({
-          id: INSPECTOR_ID,
-          icon: 'rule',
-          label: 'vee-validate',
-          noSelectionText: 'Select a vee-validate node to inspect',
-          actions: [
-            {
-              icon: 'done_outline',
-              tooltip: 'Validate selected item',
-              action: async () => {
-                if (!SELECTED_NODE) {
-                  // eslint-disable-next-line no-console
-                  console.error('There is not a valid selected vee-validate node or component');
-                  return;
-                }
-
-                if (SELECTED_NODE.type === 'field') {
-                  await SELECTED_NODE.field.validate();
-                  return;
-                }
-
-                if (SELECTED_NODE.type === 'form') {
-                  await SELECTED_NODE.form.validate();
-                  return;
-                }
-
-                if (SELECTED_NODE.type === 'pathState') {
-                  await SELECTED_NODE.form.validateField(SELECTED_NODE.state.path);
-                }
-              },
-            },
-            {
-              icon: 'delete_sweep',
-              tooltip: 'Clear validation state of the selected item',
-              action: () => {
-                if (!SELECTED_NODE) {
-                  // eslint-disable-next-line no-console
-                  console.error('There is not a valid selected vee-validate node or component');
-                  return;
-                }
-
-                if (SELECTED_NODE.type === 'field') {
-                  SELECTED_NODE.field.resetField();
-                  return;
-                }
-
-                if (SELECTED_NODE.type === 'form') {
-                  SELECTED_NODE.form.resetForm();
-                }
-
-                if (SELECTED_NODE.type === 'pathState') {
-                  SELECTED_NODE.form.resetField(SELECTED_NODE.state.path);
-                }
-              },
-            },
-          ],
-        });
-
-        api.on.getInspectorTree(payload => {
-          if (payload.inspectorId !== INSPECTOR_ID) {
-            return;
-          }
-
-          const forms = Object.values(DEVTOOLS_FORMS);
-          const fields = Object.values(DEVTOOLS_FIELDS);
-
-          payload.rootNodes = [
-            ...forms.map(mapFormForDevtoolsInspector),
-            ...fields.map(field => mapFieldForDevtoolsInspector(field)),
-          ];
-        });
-
-        api.on.getInspectorState(payload => {
-          if (payload.inspectorId !== INSPECTOR_ID) {
-            return;
-          }
-
-          const { form, field, state, type } = decodeNodeId(payload.nodeId);
-
-          api.unhighlightElement();
-
-          if (form && type === 'form') {
-            payload.state = buildFormState(form);
-            SELECTED_NODE = { type: 'form', form };
-            api.highlightElement(form._vm);
-            return;
-          }
-
-          if (state && type === 'pathState' && form) {
-            payload.state = buildFieldState(state);
-            SELECTED_NODE = { type: 'pathState', state, form };
-            return;
-          }
-
-          if (field && type === 'field') {
-            payload.state = buildFieldState({
-              errors: field.errors.value,
-              dirty: field.meta.dirty,
-              valid: field.meta.valid,
-              touched: field.meta.touched,
-              value: field.value.value,
-              initialValue: field.meta.initialValue,
-            });
-            SELECTED_NODE = { field, type: 'field' };
-            api.highlightElement(field._vm);
-            return;
-          }
-
-          SELECTED_NODE = null;
-          api.unhighlightElement();
-        });
+          throw new Error("STUB");
       },
     );
   }
 }
 
 export const refreshInspector = throttle(() => {
-  setTimeout(async () => {
-    await nextTick();
-    API?.sendInspectorState(INSPECTOR_ID);
-    API?.sendInspectorTree(INSPECTOR_ID);
-  }, 100);
+    throw new Error("STUB");
 }, 100);
 
 export function registerFormWithDevTools(form: PrivateFormContext) {
@@ -193,8 +77,7 @@ export function registerFormWithDevTools(form: PrivateFormContext) {
   DEVTOOLS_FORMS[form.formId] = { ...form };
   DEVTOOLS_FORMS[form.formId]._vm = vm;
   onUnmounted(() => {
-    delete DEVTOOLS_FORMS[form.formId];
-    refreshInspector();
+      throw new Error("STUB");
   });
 
   refreshInspector();
@@ -219,76 +102,18 @@ export function registerSingleFieldWithDevtools(field: PrivateFieldContext) {
   DEVTOOLS_FIELDS[field.id]._vm = vm;
 
   onUnmounted(() => {
-    delete DEVTOOLS_FIELDS[field.id];
-    refreshInspector();
+      throw new Error("STUB");
   });
 
   refreshInspector();
 }
 
 function mapFormForDevtoolsInspector(form: PrivateFormContext): CustomInspectorNode {
-  const { textColor, bgColor } = getValidityColors(form.meta.value.valid);
-
-  const formTreeNodes = {};
-  Object.values(form.getAllPathStates()).forEach(state => {
-    setInPath(formTreeNodes, toValue(state.path), mapPathForDevtoolsInspector(state, form));
-  });
-
-  function buildFormTree(tree: any[] | Record<string, any>, path: string[] = []): CustomInspectorNode {
-    const key = [...path].pop();
-    if ('id' in tree && typeof tree.id === 'string') {
-      return {
-        ...tree,
-        label: key || tree.label,
-      } as CustomInspectorNode;
-    }
-
-    if (isObject(tree)) {
-      return {
-        id: `${path.join('.')}`,
-        label: key || '',
-        children: Object.keys(tree).map(key => buildFormTree(tree[key] as any, [...path, key])),
-      };
-    }
-
-    if (Array.isArray(tree)) {
-      return {
-        id: `${path.join('.')}`,
-        label: `${key}[]`,
-        children: tree.map((c, idx) => buildFormTree(c, [...path, String(idx)])),
-      };
-    }
-
-    return { id: '', label: '', children: [] };
-  }
-
-  const { children } = buildFormTree(formTreeNodes);
-
-  return {
-    id: encodeNodeId(form),
-    label: form.name,
-    children,
-    tags: [
-      {
-        label: 'Form',
-        textColor,
-        backgroundColor: bgColor,
-      },
-      {
-        label: `${form.getAllPathStates().length} fields`,
-        textColor: COLORS.white,
-        backgroundColor: COLORS.unknown,
-      },
-    ],
-  };
+    throw new Error("STUB");
 }
 
 function mapPathForDevtoolsInspector(state: PathState, form?: PrivateFormContext): CustomInspectorNode {
-  return {
-    id: encodeNodeId(form, state),
-    label: toValue(state.path),
-    tags: getFieldNodeTags(state.multiple, state.fieldsCount, state.type, state.valid, form),
-  };
+    throw new Error("STUB");
 }
 
 function mapFieldForDevtoolsInspector(field: PrivateFieldContext, form?: PrivateFormContext): CustomInspectorNode {
@@ -467,13 +292,8 @@ function buildFormState(form: PrivateFormContext): CustomInspectorState {
         key: 'errors',
         value: keysOf(errorBag.value).reduce(
           (acc, key) => {
-            const message = errorBag.value[key]?.[0];
-            if (message) {
-              acc[key] = message;
-            }
-
-            return acc;
-          },
+                throw new Error("STUB");
+            },
           {} as Record<string, string | undefined>,
         ),
       },

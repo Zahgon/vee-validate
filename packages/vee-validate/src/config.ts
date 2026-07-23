@@ -10,7 +10,7 @@ export interface VeeValidateConfig {
 }
 
 const DEFAULT_CONFIG: VeeValidateConfig = {
-  generateMessage: ({ field }) => `${field} is not valid.`,
+  generateMessage: ({ field }) => { throw new Error("STUB"); },
   bails: true,
   validateOnBlur: true,
   validateOnChange: true,
@@ -23,7 +23,7 @@ export let currentConfig: VeeValidateConfig = { ...DEFAULT_CONFIG };
 export const getConfig = () => currentConfig;
 
 const setConfig = (newConf: Partial<VeeValidateConfig>) => {
-  currentConfig = { ...currentConfig, ...newConf };
+    throw new Error("STUB");
 };
 
 export const configure = setConfig;

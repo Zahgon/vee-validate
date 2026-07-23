@@ -94,7 +94,7 @@ const FieldImpl = /** #__PURE__ */ defineComponent({
     },
     bails: {
       type: Boolean,
-      default: () => getConfig().bails,
+      default: () => { throw new Error("STUB"); },
     },
     label: {
       type: String,
@@ -110,7 +110,7 @@ const FieldImpl = /** #__PURE__ */ defineComponent({
     },
     modelModifiers: {
       type: null,
-      default: () => ({}),
+      default: () => { throw new Error("STUB"); },
     },
     'onUpdate:modelValue': {
       type: null as unknown as PropType<((e: any) => unknown) | undefined>,
@@ -167,64 +167,15 @@ const FieldImpl = /** #__PURE__ */ defineComponent({
     };
 
     const sharedProps = computed(() => {
-      const { validateOnInput, validateOnChange, validateOnBlur, validateOnModelUpdate } =
-        resolveValidationTriggers(props);
-
-      function baseOnBlur(e: Event) {
-        handleBlur(e, validateOnBlur);
-        if (isCallable(ctx.attrs.onBlur)) {
-          ctx.attrs.onBlur(e);
-        }
-      }
-
-      function baseOnInput(e: Event | unknown) {
-        onChangeHandler(e, validateOnInput);
-        if (isCallable(ctx.attrs.onInput)) {
-          ctx.attrs.onInput(e);
-        }
-      }
-
-      function baseOnChange(e: Event | unknown) {
-        onChangeHandler(e, validateOnChange);
-        if (isCallable(ctx.attrs.onChange)) {
-          ctx.attrs.onChange(e);
-        }
-      }
-
-      const attrs: FieldBindingObject<unknown> = {
-        name: props.name,
-        onBlur: baseOnBlur,
-        onInput: baseOnInput,
-        onChange: baseOnChange,
-      };
-
-      attrs['onUpdate:modelValue'] = e => onChangeHandler(e, validateOnModelUpdate);
-
-      return attrs;
+        throw new Error("STUB");
     });
 
     const fieldProps = computed(() => {
-      const attrs = {
-        ...sharedProps.value,
-      };
-
-      if (hasCheckedAttr(ctx.attrs.type) && checked) {
-        attrs.checked = checked.value;
-      }
-
-      const tag = resolveTag(props, ctx);
-      if (shouldHaveValueBinding(tag, ctx.attrs)) {
-        attrs.value = value.value;
-      }
-
-      return attrs;
+        throw new Error("STUB");
     });
 
     const componentProps = computed(() => {
-      return {
-        ...sharedProps.value,
-        modelValue: value.value,
-      };
+        throw new Error("STUB");
     });
 
     function slotProps(): FieldSlotProps {
@@ -238,7 +189,7 @@ const FieldImpl = /** #__PURE__ */ defineComponent({
         validate: validateField,
         resetField,
         handleChange: onChangeHandler,
-        handleInput: e => onChangeHandler(e, false),
+        handleInput: e => { throw new Error("STUB"); },
         handleReset,
         handleBlur: sharedProps.value.onBlur,
         setTouched,
@@ -261,21 +212,7 @@ const FieldImpl = /** #__PURE__ */ defineComponent({
     });
 
     return () => {
-      const tag = resolveDynamicComponent(resolveTag(props, ctx)) as string;
-      const children = normalizeChildren(tag, ctx, slotProps as any);
-
-      if (tag) {
-        return h(
-          tag,
-          {
-            ...ctx.attrs,
-            ...fieldProps.value,
-          },
-          children,
-        );
-      }
-
-      return children;
+        throw new Error("STUB");
     };
   },
 });

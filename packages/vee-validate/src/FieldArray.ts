@@ -13,7 +13,7 @@ const FieldArrayImpl = /** #__PURE__ */ defineComponent({
     },
   },
   setup(props, ctx) {
-    const { push, remove, swap, insert, replace, update, prepend, move, fields } = useFieldArray(() => props.name);
+    const { push, remove, swap, insert, replace, update, prepend, move, fields } = useFieldArray(() => { throw new Error("STUB"); });
 
     function slotProps() {
       return {
@@ -41,9 +41,7 @@ const FieldArrayImpl = /** #__PURE__ */ defineComponent({
     });
 
     return () => {
-      const children = normalizeChildren(undefined, ctx, slotProps);
-
-      return children;
+        throw new Error("STUB");
     };
   },
 });

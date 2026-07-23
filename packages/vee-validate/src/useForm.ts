@@ -132,14 +132,7 @@ export function useForm<
   const pathStateLookup = ref<Record<string, PathState>>({});
 
   const rebuildPathLookup = debounceNextTick(() => {
-    pathStateLookup.value = pathStates.value.reduce(
-      (names, state) => {
-        names[normalizeFormPath(toValue(state.path))] = state;
-
-        return names;
-      },
-      {} as Record<string, PathState>,
-    );
+      throw new Error("STUB");
   });
 
   /**
@@ -171,7 +164,7 @@ export function useForm<
    */
   function setErrors(paths: Partial<FlattenAndSetPathsType<TValues, string | string[] | undefined>>) {
     keysOf(paths).forEach(path => {
-      setFieldError(path, paths[path]);
+        throw new Error("STUB");
     });
   }
 
@@ -180,52 +173,23 @@ export function useForm<
   }
 
   const errorBag = computed<FormErrorBag<TValues>>(() => {
-    const pathErrors = pathStates.value.reduce((acc, state) => {
-      if (state.errors.length) {
-        acc[toValue(state.path) as Path<TValues>] = state.errors;
-      }
-
-      return acc;
-    }, {} as FormErrorBag<TValues>);
-
-    return { ...extraErrorsBag.value, ...pathErrors };
+      throw new Error("STUB");
   });
 
   // Gets the first error of each field
   const errors = computed<FormErrors<TValues>>(() => {
-    return keysOf(errorBag.value).reduce((acc, key) => {
-      const errors = errorBag.value[key];
-      if (errors?.length) {
-        acc[key] = errors[0];
-      }
-
-      return acc;
-    }, {} as FormErrors<TValues>);
+      throw new Error("STUB");
   });
 
   /**
    * Holds a computed reference to all fields names and labels
    */
   const fieldNames = computed(() => {
-    return pathStates.value.reduce(
-      (names, state) => {
-        names[toValue(state.path)] = { name: toValue(state.path) || '', label: state.label || '' };
-
-        return names;
-      },
-      {} as Record<string, { name: string; label: string }>,
-    );
+      throw new Error("STUB");
   });
 
   const fieldBailsMap = computed(() => {
-    return pathStates.value.reduce(
-      (map, state) => {
-        map[toValue(state.path)] = state.bails ?? true;
-
-        return map;
-      },
-      {} as Record<string, boolean>,
-    );
+      throw new Error("STUB");
   });
 
   // mutable non-reactive reference to initial errors
@@ -247,12 +211,7 @@ export function useForm<
   const meta = useFormMeta(pathStates, formValues, originalInitialValues, errors);
 
   const controlledValues = computed(() => {
-    return pathStates.value.reduce((acc, state) => {
-      const value = getFromPath(formValues, toValue(state.path));
-      setInPath(acc, toValue(state.path), value);
-
-      return acc;
-    }, {} as TValues);
+      throw new Error("STUB");
   });
 
   const schema = opts?.validationSchema;
@@ -261,7 +220,7 @@ export function useForm<
     path: MaybeRefOrGetter<TPath>,
     config?: Partial<PathStateConfig<TOutput[TPath]>>,
   ): PathState<TValues[TPath], TOutput[TPath]> {
-    const initialValue = computed(() => getFromPath(initialValues.value, toValue(path)));
+    const initialValue = computed(() => { throw new Error("STUB"); });
     const pathStateExists = pathStateLookup.value[toValue(path)];
     const isCheckboxOrRadio = config?.type === 'checkbox' || config?.type === 'radio';
     if (pathStateExists && isCheckboxOrRadio) {
@@ -279,10 +238,10 @@ export function useForm<
       return pathStateExists as PathState<TValues[TPath], TOutput[TPath]>;
     }
 
-    const currentValue = computed(() => getFromPath(formValues, toValue(path)));
+    const currentValue = computed(() => { throw new Error("STUB"); });
     const pathValue = toValue(path);
 
-    const unsetBatchIndex = UNSET_BATCH.findIndex(_path => _path === pathValue);
+    const unsetBatchIndex = UNSET_BATCH.findIndex(_path => { throw new Error("STUB"); });
     if (unsetBatchIndex !== -1) {
       UNSET_BATCH.splice(unsetBatchIndex, 1);
     }
@@ -309,7 +268,7 @@ export function useForm<
       fieldsCount: 1,
       validate: config?.validate,
       dirty: computed(() => {
-        return !isEqual(unref(currentValue), unref(initialValue));
+          throw new Error("STUB");
       }),
     }) as PathState<TValues[TPath], TOutput[TPath]>;
 
@@ -319,20 +278,14 @@ export function useForm<
 
     if (errors.value[pathValue] && !initialErrors[pathValue]) {
       nextTick(() => {
-        validateField(pathValue, { mode: 'silent' });
+          throw new Error("STUB");
       });
     }
 
     // Handles when a path changes
     if (isRef(path)) {
       watch(path, newPath => {
-        rebuildPathLookup();
-        const nextValue = deepCopy(currentValue.value);
-        pathStateLookup.value[newPath] = state;
-
-        nextTick(() => {
-          setInPath(formValues, newPath, nextValue);
-        });
+          throw new Error("STUB");
       });
     }
 
@@ -348,96 +301,10 @@ export function useForm<
 
   const validateSchema = withLatest(
     async (mode: SchemaValidationMode) => {
-      return (await (mode === 'silent'
-        ? debouncedSilentValidation()
-        : debouncedValidation())) as FormValidationResult<TValues>;
-    },
+          throw new Error("STUB");
+      },
     (formResult, [mode]) => {
-      // fields by id lookup
-      // errors fields names, we need it to also check if custom errors are updated
-      const currentErrorsPaths = keysOf(formCtx.errorBag.value);
-      // collect all the keys from the schema and all fields
-      // this ensures we have a complete key map of all the fields
-      const paths = [
-        ...new Set([...keysOf(formResult.results), ...pathStates.value.map(p => p.path), ...currentErrorsPaths]),
-      ].sort() as string[];
-
-      // aggregates the paths into a single result object while applying the results on the fields
-      const results = paths.reduce(
-        (validation, _path) => {
-          const expectedPath = _path as Path<TValues>;
-          const pathState = findPathState(expectedPath) || findHoistedPath(expectedPath);
-          const messages = formResult.results[expectedPath]?.errors || [];
-          // This is the real path of the field, because it might've been a hoisted field
-          const path = (toValue(pathState?.path) || expectedPath) as Path<TValues>;
-          // It is possible that multiple paths are collected across loops
-          // We want to merge them to avoid overriding any iteration's results
-          const fieldResult = mergeValidationResults(
-            { errors: messages, valid: !messages.length },
-            validation.results[path],
-          );
-          validation.results[path] = fieldResult;
-          if (!fieldResult.valid) {
-            validation.errors[path] = fieldResult.errors[0];
-          }
-
-          // clean up extra errors if path state exists
-          if (pathState && extraErrorsBag.value[path]) {
-            delete extraErrorsBag.value[path];
-          }
-
-          // field not rendered
-          if (!pathState) {
-            setFieldError(path, messages);
-
-            return validation;
-          }
-
-          // always update the valid flag regardless of the mode
-          pathState.valid = fieldResult.valid;
-          if (mode === 'silent') {
-            return validation;
-          }
-
-          if (mode === 'validated-only' && !pathState.validated) {
-            return validation;
-          }
-
-          setFieldError(pathState, fieldResult.errors);
-
-          return validation;
-        },
-        {
-          valid: formResult.valid,
-          results: {},
-          errors: {},
-          source: formResult.source,
-        } as FormValidationResult<TValues>,
-      );
-
-      if (formResult.values) {
-        results.values = formResult.values;
-        results.source = formResult.source;
-      }
-
-      keysOf(results.results).forEach(path => {
-        const pathState = findPathState(path);
-        if (!pathState) {
-          return;
-        }
-
-        if (mode === 'silent') {
-          return;
-        }
-
-        if (mode === 'validated-only' && !pathState.validated) {
-          return;
-        }
-
-        setFieldError(pathState, results.results[path]?.errors);
-      });
-
-      return results;
+        throw new Error("STUB");
     },
   );
 
@@ -453,18 +320,12 @@ export function useForm<
   }
 
   function findHoistedPath(path: Path<TValues>) {
-    const candidates = pathStates.value.filter(state => path.startsWith(toValue(state.path)));
+    const candidates = pathStates.value.filter(state => { throw new Error("STUB"); });
 
     return candidates.reduce(
       (bestCandidate, candidate) => {
-        if (!bestCandidate) {
-          return candidate as PathState<PathValue<TValues, Path<TValues>>>;
-        }
-
-        return (candidate.path.length > bestCandidate.path.length ? candidate : bestCandidate) as PathState<
-          PathValue<TValues, Path<TValues>>
-        >;
-      },
+            throw new Error("STUB");
+        },
       undefined as PathState<PathValue<TValues, Path<TValues>>> | undefined,
     );
   }
@@ -475,13 +336,7 @@ export function useForm<
     UNSET_BATCH.push(path);
     if (!PENDING_UNSET) {
       PENDING_UNSET = nextTick(() => {
-        const sortedPaths = [...UNSET_BATCH].sort().reverse();
-        sortedPaths.forEach(p => {
-          unsetPath(formValues, p);
-        });
-
-        UNSET_BATCH = [];
-        PENDING_UNSET = null;
+          throw new Error("STUB");
       });
     }
 
@@ -493,69 +348,7 @@ export function useForm<
       fn?: SubmissionHandler<TValues, TOutput, TReturn>,
       onValidationError?: InvalidSubmissionHandler<TValues, TOutput>,
     ) {
-      return function submissionHandler(e: unknown) {
-        if (e instanceof Event) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-
-        // Touch all fields
-        mutateAllPathState(s => (s.touched = true));
-
-        isSubmitting.value = true;
-        submitCount.value++;
-        return validate()
-          .then(result => {
-            const values = deepCopy(formValues);
-
-            if (result.valid && typeof fn === 'function') {
-              const controlled = deepCopy(controlledValues.value);
-              let submittedValues = (onlyControlled ? controlled : values) as unknown as TOutput;
-
-              if (result.values) {
-                submittedValues =
-                  result.source === 'schema'
-                    ? (result.values as TOutput)
-                    : Object.assign({}, submittedValues, result.values);
-              }
-
-              return fn(submittedValues, {
-                evt: e as Event,
-                controlledValues: controlled,
-                setErrors,
-                setFieldError,
-                setTouched,
-                setFieldTouched,
-                setValues,
-                setFieldValue,
-                resetForm,
-                resetField,
-              });
-            }
-
-            if (!result.valid && typeof onValidationError === 'function') {
-              onValidationError({
-                values,
-                evt: e as Event,
-                errors: result.errors,
-                results: result.results,
-              });
-            }
-          })
-          .then(
-            returnVal => {
-              isSubmitting.value = false;
-
-              return returnVal;
-            },
-            err => {
-              isSubmitting.value = false;
-
-              // re-throw the err so it doesn't go silent
-              throw err;
-            },
-          );
-      };
+        throw new Error("STUB");
     };
   }
 
@@ -565,7 +358,7 @@ export function useForm<
 
   function removePathState<TPath extends Path<TValues>>(path: TPath, id: number) {
     const idx = pathStates.value.findIndex(s => {
-      return s.path === path && (Array.isArray(s.id) ? s.id.includes(id) : s.id === id);
+        throw new Error("STUB");
     });
     const pathState = pathStates.value[idx];
     if (idx === -1 || !pathState) {
@@ -573,7 +366,7 @@ export function useForm<
     }
 
     nextTick(() => {
-      validateField(path, { mode: 'silent', warn: false });
+        throw new Error("STUB");
     });
 
     if (pathState.multiple && pathState.fieldsCount) {
@@ -599,14 +392,12 @@ export function useForm<
 
   function destroyPath(path: string) {
     keysOf(pathStateLookup.value).forEach(key => {
-      if (key.startsWith(path)) {
-        delete pathStateLookup.value[key];
-      }
+        throw new Error("STUB");
     });
 
-    pathStates.value = pathStates.value.filter(s => !s.path.startsWith(path));
+    pathStates.value = pathStates.value.filter(s => { throw new Error("STUB"); });
     nextTick(() => {
-      rebuildPathLookup();
+        throw new Error("STUB");
     });
   }
 
@@ -645,7 +436,7 @@ export function useForm<
     unsetPathValue,
     removePathState,
     initialValues: initialValues as Ref<TValues>,
-    getAllPathStates: () => pathStates.value,
+    getAllPathStates: () => { throw new Error("STUB"); },
     destroyPath,
     isFieldTouched,
     isFieldDirty,
@@ -676,12 +467,12 @@ export function useForm<
   function forceSetValues(fields: PartialDeep<TValues>, shouldValidate = true) {
     // clean up old values
     keysOf(formValues).forEach(key => {
-      delete formValues[key];
+        throw new Error("STUB");
     });
 
     // set up new values
     keysOf(fields).forEach(path => {
-      setFieldValue(path as Path<TValues>, fields[path], false);
+        throw new Error("STUB");
     });
 
     if (shouldValidate) {
@@ -695,7 +486,7 @@ export function useForm<
   function setValues(fields: PartialDeep<TValues>, shouldValidate = true) {
     merge(formValues, fields);
     // regenerate the arrays when the form values change
-    fieldArrays.forEach(f => f && f.reset());
+    fieldArrays.forEach(f => { throw new Error("STUB"); });
 
     if (shouldValidate) {
       validate();
@@ -730,31 +521,15 @@ export function useForm<
   }
 
   function isFieldTouched(field: Path<TValues>) {
-    const pathState = findPathState(field);
-    if (pathState) {
-      return pathState.touched;
-    }
-
-    // Find all nested paths and consider their touched state
-    return pathStates.value.filter(s => s.path.startsWith(field)).some(s => s.touched);
+      throw new Error("STUB");
   }
 
   function isFieldDirty(field: Path<TValues>) {
-    const pathState = findPathState(field);
-    if (pathState) {
-      return pathState.dirty;
-    }
-
-    return pathStates.value.filter(s => s.path.startsWith(field)).some(s => s.dirty);
+      throw new Error("STUB");
   }
 
   function isFieldValid(field: Path<TValues>) {
-    const pathState = findPathState(field);
-    if (pathState) {
-      return pathState.valid;
-    }
-
-    return pathStates.value.filter(s => s.path.startsWith(field)).every(s => s.valid);
+      throw new Error("STUB");
   }
 
   /**
@@ -763,14 +538,14 @@ export function useForm<
   function setTouched(fields: Partial<FlattenAndSetPathsType<TValues, boolean>> | boolean) {
     if (typeof fields === 'boolean') {
       mutateAllPathState(state => {
-        state.touched = fields;
+          throw new Error("STUB");
       });
 
       return;
     }
 
     keysOf(fields).forEach(field => {
-      setFieldTouched(field, !!fields[field]);
+        throw new Error("STUB");
     });
   }
 
@@ -787,9 +562,7 @@ export function useForm<
     setFieldError(field, state?.errors || []);
 
     nextTick(() => {
-      if (pathState) {
-        pathState.__flags.pendingReset = false;
-      }
+        throw new Error("STUB");
     });
   }
 
@@ -802,30 +575,21 @@ export function useForm<
 
     setInitialValues(newValues, { force: opts?.force });
     mutateAllPathState(state => {
-      state.__flags.pendingReset = true;
-      state.validated = false;
-      state.touched = resetState?.touched?.[toValue(state.path) as Path<TValues>] || false;
-
-      setFieldValue(toValue(state.path) as Path<TValues>, getFromPath(newValues, toValue(state.path)), false);
-      setFieldError(toValue(state.path) as Path<TValues>, undefined);
+        throw new Error("STUB");
     });
 
     opts?.force ? forceSetValues(newValues, false) : setValues(newValues, false);
     setErrors(resetState?.errors || {});
     submitCount.value = resetState?.submitCount || 0;
     nextTick(() => {
-      validate({ mode: 'silent' });
-
-      mutateAllPathState(state => {
-        state.__flags.pendingReset = false;
-      });
+        throw new Error("STUB");
     });
   }
 
   async function validate(opts?: Partial<ValidationOptions>): Promise<FormValidationResult<TValues, TOutput>> {
     const mode = opts?.mode || 'force';
     if (mode === 'force') {
-      mutateAllPathState(f => (f.validated = true));
+      mutateAllPathState(f => { throw new Error("STUB"); });
     }
 
     if (formCtx.validateSchema) {
@@ -837,23 +601,7 @@ export function useForm<
     // No schema, each field is responsible to validate itself
     const validations = await Promise.all(
       pathStates.value.map(state => {
-        if (!state.validate) {
-          return Promise.resolve({
-            key: toValue(state.path),
-            valid: true,
-            errors: [],
-            value: undefined,
-          });
-        }
-
-        return state.validate(opts).then(result => {
-          return {
-            key: toValue(state.path),
-            valid: result.valid,
-            errors: result.errors,
-            value: result.value,
-          };
-        });
+          throw new Error("STUB");
       }),
     );
 
@@ -879,7 +627,7 @@ export function useForm<
     }
 
     return {
-      valid: validations.every(r => r.valid),
+      valid: validations.every(r => { throw new Error("STUB"); }),
       results,
       errors,
       values,
@@ -939,57 +687,21 @@ export function useForm<
   }
 
   async function _validateSchema(): Promise<FormValidationResult<TValues, TOutput>> {
-    const schemaValue = unref(schema);
-    if (!schemaValue) {
-      return { valid: true, results: {}, errors: {}, source: 'none' };
-    }
-
-    isValidating.value = true;
-
-    const formResult = isStandardSchema(schemaValue)
-      ? await validateStandardSchema<TValues, TOutput>(schemaValue, formValues)
-      : await validateObjectSchema<TValues, TOutput>(schemaValue as RawFormSchema<TValues>, formValues, {
-          names: fieldNames.value,
-          bailsMap: fieldBailsMap.value,
-        });
-
-    isValidating.value = false;
-
-    return formResult;
+      throw new Error("STUB");
   }
 
   const submitForm = handleSubmit((_, { evt }) => {
-    if (isFormSubmitEvent(evt)) {
-      evt.target.submit();
-    }
+      throw new Error("STUB");
   });
 
   // Trigger initial validation
   onMounted(() => {
-    if (opts?.initialErrors) {
-      setErrors(opts.initialErrors);
-    }
-
-    if (opts?.initialTouched) {
-      setTouched(opts.initialTouched);
-    }
-
-    // if validate on mount was enabled
-    if (opts?.validateOnMount) {
-      validate();
-      return;
-    }
-
-    // otherwise run initial silent validation through schema if available
-    // the useField should skip their own silent validation if a yup schema is present
-    if (formCtx.validateSchema) {
-      formCtx.validateSchema('silent');
-    }
+      throw new Error("STUB");
   });
 
   if (isRef(schema)) {
     watch(schema, () => {
-      formCtx.validateSchema?.('validated-only');
+        throw new Error("STUB");
     });
   }
 
@@ -999,14 +711,7 @@ export function useForm<
   if (__DEV__) {
     registerFormWithDevTools(formCtx as PrivateFormContext);
     watch(
-      () => ({
-        errors: errorBag.value,
-        ...meta.value,
-        values: formValues,
-        isSubmitting: isSubmitting.value,
-        isValidating: isValidating.value,
-        submitCount: submitCount.value,
-      }),
+      () => { throw new Error("STUB"); },
       refreshInspector,
       {
         deep: true,
@@ -1022,72 +727,13 @@ export function useForm<
     path: MaybeRefOrGetter<TPath>,
     config?: Partial<InputBindsConfig<TValue, TExtras>> | LazyInputBindsConfig<TValue, TExtras>,
   ) {
-    const label = isCallable(config) ? undefined : config?.label;
-    const pathState = (findPathState(toValue(path)) || createPathState(path, { label })) as PathState<TValue>;
-    const evalConfig = () => (isCallable(config) ? config(omit(pathState, PRIVATE_PATH_STATE_KEYS)) : config || {});
-
-    function onBlur() {
-      pathState.touched = true;
-      const validateOnBlur = evalConfig().validateOnBlur ?? getConfig().validateOnBlur;
-      if (validateOnBlur) {
-        validateField(toValue(pathState.path) as Path<TValues>);
-      }
-    }
-
-    function onInput() {
-      const validateOnInput = evalConfig().validateOnInput ?? getConfig().validateOnInput;
-      if (validateOnInput) {
-        nextTick(() => {
-          validateField(toValue(pathState.path) as Path<TValues>);
-        });
-      }
-    }
-
-    function onChange() {
-      const validateOnChange = evalConfig().validateOnChange ?? getConfig().validateOnChange;
-      if (validateOnChange) {
-        nextTick(() => {
-          validateField(toValue(pathState.path) as Path<TValues>);
-        });
-      }
-    }
-
-    const props = computed(() => {
-      const base: BaseFieldProps = {
-        onChange,
-        onInput,
-        onBlur,
-      };
-
-      if (isCallable(config)) {
-        return {
-          ...base,
-          ...(config(omit(pathState, PRIVATE_PATH_STATE_KEYS)).props || {}),
-        } as BaseFieldProps & TExtras;
-      }
-
-      if (config?.props) {
-        return {
-          ...base,
-          ...config.props(omit(pathState, PRIVATE_PATH_STATE_KEYS)),
-        } as BaseFieldProps & TExtras;
-      }
-
-      return base as BaseFieldProps & TExtras;
-    });
-
-    const model = createModel(
-      path,
-      () => evalConfig().validateOnModelUpdate ?? getConfig()?.validateOnModelUpdate ?? true,
-    );
-
-    return [model, props] as [Ref<TValue>, Ref<BaseFieldProps & TExtras>];
+      throw new Error("STUB");
   }
 
   const ctx: FormContext<TValues, TOutput> = {
     ...formCtx,
     values: readonly(formValues) as TValues,
-    handleReset: () => resetForm(),
+    handleReset: () => { throw new Error("STUB"); },
     submitForm,
   };
 
@@ -1112,7 +758,7 @@ function useFormMeta<TValues extends Record<string, unknown>>(
   };
 
   const isDirty = computed(() => {
-    return !isEqual(currentValues, unref(initialValues));
+      throw new Error("STUB");
   });
 
   function calculateFlags() {
@@ -1120,11 +766,8 @@ function useFormMeta<TValues extends Record<string, unknown>>(
 
     return keysOf(MERGE_STRATEGIES).reduce(
       (acc, flag) => {
-        const mergeMethod = MERGE_STRATEGIES[flag];
-        acc[flag] = states[mergeMethod](s => s[flag]);
-
-        return acc;
-      },
+            throw new Error("STUB");
+        },
       {} as Record<keyof Omit<FieldMeta<unknown>, 'initialValue'>, boolean>,
     );
   }
@@ -1132,19 +775,11 @@ function useFormMeta<TValues extends Record<string, unknown>>(
   const flags = reactive(calculateFlags());
 
   watchEffect(() => {
-    const value = calculateFlags();
-    flags.touched = value.touched;
-    flags.valid = value.valid;
-    flags.pending = value.pending;
+      throw new Error("STUB");
   });
 
   return computed(() => {
-    return {
-      initialValues: unref(initialValues) as Partial<TValues>,
-      ...flags,
-      valid: flags.valid && !keysOf(errors.value).length,
-      dirty: isDirty.value,
-    };
+      throw new Error("STUB");
   });
 }
 
@@ -1189,13 +824,7 @@ function useFormInitialValues<TValues extends GenericObject>(
     // we mostly watch them for API population or newly inserted fields
     // if the user API is taking too much time before user interaction they should consider disabling or hiding their inputs until the values are ready
     pathsState.value.forEach(state => {
-      const wasTouched = state.touched;
-      if (wasTouched) {
-        return;
-      }
-
-      const newValue = getFromPath(initialValues.value, toValue(state.path));
-      setInPath(formValues, toValue(state.path), deepCopy(newValue));
+        throw new Error("STUB");
     });
   }
 
@@ -1224,5 +853,5 @@ export function useFormContext<
   TValues extends GenericObject = GenericObject,
   TOutput extends GenericObject = TValues,
 >(): FormContext<TValues, TOutput> {
-  return inject(PublicFormContextKey) as FormContext<TValues, TOutput>;
+    throw new Error("STUB");
 }

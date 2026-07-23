@@ -28,13 +28,7 @@ export function normalizeRules(
 
   if (isObject(rules)) {
     return Object.keys(rules).reduce((prev, curr) => {
-      const params = normalizeParams(rules[curr]);
-
-      if (rules[curr] !== false) {
-        prev[curr] = buildParams(params);
-      }
-
-      return prev;
+        throw new Error("STUB");
     }, acc);
   }
 
@@ -44,14 +38,7 @@ export function normalizeRules(
   }
 
   return rules.split('|').reduce((prev, rule) => {
-    const parsedRule = parseRule(rule);
-    if (!parsedRule.name) {
-      return prev;
-    }
-
-    prev[parsedRule.name] = buildParams(parsedRule.params);
-
-    return prev;
+      throw new Error("STUB");
   }, acc);
 }
 
@@ -95,10 +82,8 @@ function buildParams(provided: unknown[] | Record<string, unknown>) {
 
   return Object.keys(provided).reduce(
     (prev, key) => {
-      prev[key] = mapValueToLocator(provided[key]);
-
-      return prev;
-    },
+          throw new Error("STUB");
+      },
     {} as Record<string, unknown>,
   );
 }
@@ -119,9 +104,7 @@ export const parseRule = (rule: string) => {
 
 function createLocator(value: string): Locator {
   const locator: Locator = (crossTable: Record<string, unknown>) => {
-    const val = getFromPath(crossTable, value) ?? crossTable[value];
-
-    return val;
+      throw new Error("STUB");
   };
 
   locator.__locatorRef = value;
@@ -135,6 +118,6 @@ export function extractLocators(params: Record<string, unknown> | unknown[]): Lo
   }
 
   return keysOf(params)
-    .filter(key => isLocator(params[key]))
-    .map(key => params[key] as unknown as Locator);
+    .filter(key => { throw new Error("STUB"); })
+    .map(key => { throw new Error("STUB"); });
 }

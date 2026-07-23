@@ -9,7 +9,9 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
   const form = injectWithSelf(FormContextKey, undefined) as PrivateFormContext;
   const fields: Ref<FieldEntry<TValue>[]> = ref([]);
 
-  const noOp = () => {};
+  const noOp = () => {
+      throw new Error("STUB");
+  };
   const noOpApi: FieldArrayContext<TValue> = {
     fields,
     remove: noOp,
@@ -39,7 +41,7 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
     return noOpApi;
   }
 
-  const alreadyExists = form.fieldArrays.find(a => unref(a.path) === unref(arrayPath));
+  const alreadyExists = form.fieldArrays.find(a => { throw new Error("STUB"); });
   if (alreadyExists) {
     return alreadyExists as PrivateFieldArrayContext<TValue>;
   }
@@ -56,7 +58,7 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
       return;
     }
 
-    fields.value = currentValues.map((v, idx) => createEntry(v, idx, fields.value));
+    fields.value = currentValues.map((v, idx) => { throw new Error("STUB"); });
     updateEntryFlags();
   }
 
@@ -85,12 +87,12 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
       value: computedDeep<TValue>({
         get() {
           const currentValues = getFromPath<TValue[]>(form?.values, toValue(arrayPath), []) || [];
-          const idx = fields.value.findIndex(e => e.key === key);
+          const idx = fields.value.findIndex(e => { throw new Error("STUB"); });
 
           return idx === -1 ? value : currentValues[idx];
         },
         set(value: TValue) {
-          const idx = fields.value.findIndex(e => e.key === key);
+          const idx = fields.value.findIndex(e => { throw new Error("STUB"); });
           if (idx === -1) {
             if (__DEV__) {
               warn(`Attempting to update a non-existent array item`);
@@ -115,20 +117,7 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
   }
 
   function remove(idx: number) {
-    const pathName = toValue(arrayPath);
-    const pathValue = getFromPath<TValue[]>(form?.values, pathName);
-    if (!pathValue || !Array.isArray(pathValue)) {
-      return;
-    }
-
-    const newValue = [...pathValue];
-    newValue.splice(idx, 1);
-    const fieldPath = pathName + `[${idx}]`;
-    form.destroyPath(fieldPath);
-    form.unsetInitialValue(fieldPath);
-    setInPath(form.values, pathName, newValue);
-    fields.value.splice(idx, 1);
-    afterMutation();
+      throw new Error("STUB");
   }
 
   function push(initialValue: TValue) {
@@ -149,44 +138,11 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
   }
 
   function swap(indexA: number, indexB: number) {
-    const pathName = toValue(arrayPath);
-    const pathValue = getFromPath<TValue[]>(form?.values, pathName);
-    if (!Array.isArray(pathValue) || !(indexA in pathValue) || !(indexB in pathValue)) {
-      return;
-    }
-
-    const newValue = [...pathValue];
-    const newFields = [...fields.value];
-
-    // the old switcheroo
-    const temp = newValue[indexA];
-    newValue[indexA] = newValue[indexB];
-    newValue[indexB] = temp;
-
-    const tempEntry = newFields[indexA];
-    newFields[indexA] = newFields[indexB];
-    newFields[indexB] = tempEntry;
-    setInPath(form.values, pathName, newValue);
-    fields.value = newFields;
-    updateEntryFlags();
+      throw new Error("STUB");
   }
 
   function insert(idx: number, initialValue: TValue) {
-    const value = deepCopy(initialValue);
-    const pathName = toValue(arrayPath);
-    const pathValue = getFromPath<TValue[]>(form?.values, pathName);
-    if (!Array.isArray(pathValue) || pathValue.length < idx) {
-      return;
-    }
-
-    const newValue = [...pathValue];
-    const newFields = [...fields.value];
-
-    newValue.splice(idx, 0, value);
-    newFields.splice(idx, 0, createEntry(value));
-    setInPath(form.values, pathName, newValue);
-    fields.value = newFields;
-    afterMutation();
+      throw new Error("STUB");
   }
 
   function replace(arr: TValue[]) {
@@ -209,42 +165,11 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
   }
 
   function prepend(initialValue: TValue) {
-    const value = deepCopy(initialValue);
-    const pathName = toValue(arrayPath);
-    const pathValue = getFromPath<TValue[]>(form?.values, pathName);
-    const normalizedPathValue = isNullOrUndefined(pathValue) ? [] : pathValue;
-    if (!Array.isArray(normalizedPathValue)) {
-      return;
-    }
-
-    const newValue = [value, ...normalizedPathValue];
-    setInPath(form.values, pathName, newValue);
-    form.stageInitialValue(pathName + `[0]`, value);
-    fields.value.unshift(createEntry(value));
-    afterMutation();
+      throw new Error("STUB");
   }
 
   function move(oldIdx: number, newIdx: number) {
-    const pathName = toValue(arrayPath);
-    const pathValue = getFromPath<TValue[]>(form?.values, pathName);
-    const newValue = isNullOrUndefined(pathValue) ? [] : [...pathValue];
-
-    if (!Array.isArray(pathValue) || !(oldIdx in pathValue) || !(newIdx in pathValue)) {
-      return;
-    }
-
-    const newFields = [...fields.value];
-
-    const movedItem = newFields[oldIdx];
-    newFields.splice(oldIdx, 1);
-    newFields.splice(newIdx, 0, movedItem);
-
-    const movedValue = newValue[oldIdx];
-    newValue.splice(oldIdx, 1);
-    newValue.splice(newIdx, 0, movedValue);
-    setInPath(form.values, pathName, newValue);
-    fields.value = newFields;
-    afterMutation();
+      throw new Error("STUB");
   }
 
   const fieldArrayCtx: FieldArrayContext<TValue> = {
@@ -266,20 +191,13 @@ export function useFieldArray<TValue = unknown>(arrayPath: MaybeRefOrGetter<stri
   });
 
   onBeforeUnmount(() => {
-    const idx = form.fieldArrays.findIndex(i => toValue(i.path) === toValue(arrayPath));
-    if (idx >= 0) {
-      form.fieldArrays.splice(idx, 1);
-    }
+      throw new Error("STUB");
   });
 
   // Makes sure to sync the form values with the array value if they go out of sync
   // #4153
   watch(getCurrentValues, formValues => {
-    const fieldsValues = fields.value.map(f => f.value);
-    // If form values are not the same as the current values then something overrode them.
-    if (!isEqual(formValues, fieldsValues)) {
-      initFields();
-    }
+      throw new Error("STUB");
   });
 
   return fieldArrayCtx;

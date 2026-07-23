@@ -116,40 +116,28 @@ const FormImpl = /** #__PURE__ */ defineComponent({
     });
 
     const submitForm = handleSubmit((_, { evt }) => {
-      if (isFormSubmitEvent(evt)) {
-        evt.target.submit();
-      }
+        throw new Error("STUB");
     }, props.onInvalidSubmit);
 
     const onSubmit = props.onSubmit ? handleSubmit(props.onSubmit, props.onInvalidSubmit) : submitForm;
     function handleFormReset(e?: Event) {
-      if (isEvent(e)) {
-        // Prevent default form reset behavior
-        e.preventDefault();
-      }
-
-      handleReset();
-      if (typeof ctx.attrs.onReset === 'function') {
-        ctx.attrs.onReset();
-      }
+        throw new Error("STUB");
     }
 
     function handleScopedSlotSubmit(evt: Event | SubmissionHandler, onSubmit?: SubmissionHandler) {
-      const onSuccess = typeof evt === 'function' && !onSubmit ? evt : onSubmit;
-
-      return handleSubmit(onSuccess as SubmissionHandler<Record<string, unknown>>, props.onInvalidSubmit)(evt as Event);
+        throw new Error("STUB");
     }
 
     function getValues<TValues extends GenericObject = GenericObject>() {
-      return deepCopy(values) as TValues;
+        throw new Error("STUB");
     }
 
     function getMeta<TValues extends GenericObject = GenericObject>() {
-      return deepCopy(meta.value) as FormMeta<TValues>;
+        throw new Error("STUB");
     }
 
     function getErrors<TValues extends GenericObject = GenericObject>() {
-      return deepCopy(errors.value) as FormErrors<TValues>;
+        throw new Error("STUB");
     }
 
     function slotProps(): FormSlotProps {
@@ -202,33 +190,7 @@ const FormImpl = /** #__PURE__ */ defineComponent({
     });
 
     return function renderForm() {
-      // avoid resolving the form component as itself
-      const tag = props.as === 'form' ? props.as : !props.as ? null : (resolveDynamicComponent(props.as) as string);
-      const children = normalizeChildren(tag, ctx, slotProps as any);
-
-      if (!tag) {
-        return children;
-      }
-
-      // Attributes to add on a native `form` tag
-      const formAttrs =
-        tag === 'form'
-          ? {
-              // Disables native validation as vee-validate will handle it.
-              novalidate: true,
-            }
-          : {};
-
-      return h(
-        tag,
-        {
-          ...formAttrs,
-          ...ctx.attrs,
-          onSubmit,
-          onReset: handleFormReset,
-        },
-        children,
-      );
+        throw new Error("STUB");
     };
   },
 });

@@ -9,10 +9,7 @@ export function defineRule<TValue = unknown, TParams = any[] | Record<string, an
   id: string,
   validator: ValidationRuleFunction<TValue, TParams> | SimpleValidationRuleFunction<TValue, TParams>,
 ) {
-  // makes sure new rules are properly formatted.
-  guardExtend(id, validator);
-
-  RULES[id] = validator as SimpleValidationRuleFunction;
+    throw new Error("STUB");
 }
 
 /**
@@ -29,9 +26,5 @@ function guardExtend<TValue, TParams>(
   id: string,
   validator: ValidationRuleFunction<TValue, TParams> | SimpleValidationRuleFunction<TValue, TParams>,
 ) {
-  if (isCallable(validator)) {
-    return;
-  }
-
-  throw new Error(`Extension Error: The validator '${id}' must be a function.`);
+    throw new Error("STUB");
 }

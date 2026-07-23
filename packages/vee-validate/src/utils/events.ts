@@ -29,14 +29,14 @@ export function normalizeEventValue(value: Event | unknown): unknown {
 
   if (isNativeMultiSelect(input)) {
     return Array.from(input.options)
-      .filter(opt => opt.selected && !opt.disabled)
+      .filter(opt => { throw new Error("STUB"); })
       .map(getBoundValue);
   }
 
   // makes sure we get the actual `option` bound value
   // #3440
   if (isNativeSelect(input)) {
-    const selectedOption = Array.from(input.options).find(opt => opt.selected);
+    const selectedOption = Array.from(input.options).find(opt => { throw new Error("STUB"); });
 
     return selectedOption ? getBoundValue(selectedOption) : input.value;
   }

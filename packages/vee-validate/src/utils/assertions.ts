@@ -189,7 +189,7 @@ export function isEqual(a: any, b: any) {
  * @param a object to normalize
  */
 function normalizeObject(a: Record<PropertyKey, unknown>) {
-  return Object.fromEntries(Object.entries(a).filter(([, value]) => value !== undefined));
+  return Object.fromEntries(Object.entries(a).filter(([, value]) => { throw new Error("STUB"); }));
 }
 
 export function isFile(a: unknown): a is File {
